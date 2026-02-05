@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excelシート統合ツール</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Hiragino Sans', sans-serif;
+            max-width: 550px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        h1 {
+            color: #1a365d;
+            margin-bottom: 8px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .description {
+            color: #64748b;
+            margin-bottom: 32px;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+        .form-group {
+            margin-bottom: 24px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #334155;
+            font-size: 14px;
+        }
+        .drop-zone {
+            position: relative;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+        }
+        .drop-zone:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        .drop-zone.dragover {
+            border-color: #3b82f6;
+            background: #dbeafe;
+            transform: scale(1.02);
+        }
+        .drop-zone.has-files {
+            border-color: #22c55e;
+            background: #f0fdf4;
+        }
+        .drop-zone input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .drop-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: #94a3b8;
+        }
+        .drop-zone.has-files .drop-icon {
+            color: #22c55e;
+        }
+        .drop-text {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .drop-hint {
+            color: #94a3b8;
+            font-size: 12px;
+        }
+        button[type="submit"] {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+        }
+        button[type="submit"]:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+        }
+        button[type="submit"]:active {
+            transform: translateY(0);
+        }
+        button[type="submit"]:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .flash-messages {
+            margin-bottom: 24px;
+        }
+        .flash {
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .flash.error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        .flash.success {
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+        .flash.warning {
+            background: #fffbeb;
+            color: #d97706;
+            border: 1px solid #fde68a;
+        }
+        .info-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+        .info-box h3 {
+            color: #1e40af;
+            font-size: 14px;
+            margin: 0 0 8px 0;
+            font-weight: 600;
+        }
+        .info-box ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #3b82f6;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+        .file-list {
+            margin-top: 20px;
+            display: none;
+        }
+        .file-list.visible {
+            display: block;
+        }
+        .file-list h3 {
+            font-size: 14px;
+            color: #334155;
+            margin: 0 0 12px 0;
+            font-weight: 600;
+        }
+        .file-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+        }
+        .file-item:last-child {
+            margin-bottom: 0;
+        }
+        .file-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .file-name {
+            font-weight: 600;
+            color: #334155;
+            font-size: 14px;
+            word-break: break-all;
+        }
+        .file-remove {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 4px;
+            font-size: 18px;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        .file-remove:hover {
+            color: #dc2626;
+        }
+        .sheet-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .sheet-tag {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 12px;
+            color: #64748b;
+        }
+        .summary {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 16px;
+            font-size: 14px;
+            color: #16a34a;
+            display: none;
+        }
+        .summary.visible {
+            display: block;
+        }
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .loading-overlay.visible {
+            display: flex;
+        }
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #e2e8f0;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .loading-text {
+            margin-top: 16px;
+            color: #475569;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .site-footer {
+            text-align: center;
+            padding: 24px 20px;
+            margin-top: 20px;
+        }
+        .site-footer a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 12px;
+            transition: color 0.2s;
+        }
+        .site-footer a:hover {
+            color: #3b82f6;
+        }
+        @media (max-width: 480px) {
+            body {
+                padding: 20px 12px;
+            }
+            .container {
+                padding: 24px;
+            }
+            h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Excelシート統合ツール</h1>
+        <p class="description">
+            複数のExcelファイルをアップロードすると、<br>
+            すべてのシートを1つのファイルに統合してダウンロードできます。
+        </p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="info-box">
+            <h3>使い方</h3>
+            <ul>
+                <li>2つ以上のExcelファイル（.xlsx, .xlsm）を選択</li>
+                <li>各ファイルのシートが「ファイル名_シート名」で統合されます</li>
+                <li>書式・レイアウト・数式は保持されます</li>
+            </ul>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" id="uploadForm">
+            <div class="form-group">
+                <label>Excelファイルを選択（複数可）</label>
+                <div class="drop-zone" id="dropZone">
+                    <input type="file" name="files[]" id="fileInput" accept=".xlsx,.xlsm" multiple required>
+                    <div class="drop-icon" id="dropIcon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                    </div>
+                    <div class="drop-text">ここにファイルをドラッグ&ドロップ</div>
+                    <div class="drop-hint">または クリックしてファイルを選択（複数可）</div>
+                </div>
+
+                <div class="file-list" id="fileList">
+                    <h3>選択されたファイル</h3>
+                    <div id="fileItems"></div>
+                    <div class="summary" id="summary"></div>
+                </div>
+            </div>
+
+            <button type="submit" id="submitBtn" disabled>統合してダウンロード</button>
+        </form>
+    </div>
+
+    <footer class="site-footer">
+        <a href="https://chiapuru.com" target="_blank" rel="noopener">chiapuru.com</a>
+    </footer>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text">シートを統合しています...</div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const fileItems = document.getElementById('fileItems');
+        const summary = document.getElementById('summary');
+        const submitBtn = document.getElementById('submitBtn');
+        const uploadForm = document.getElementById('uploadForm');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+
+        let selectedFiles = [];
+        let fileSheets = {};
+
+        // ドラッグ&ドロップイベント
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => {
+                dropZone.classList.add('dragover');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => {
+                dropZone.classList.remove('dragover');
+            }, false);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const files = Array.from(e.dataTransfer.files);
+            addFiles(files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            addFiles(files);
+        });
+
+        function addFiles(files) {
+            const validFiles = files.filter(f =>
+                f.name.toLowerCase().endsWith('.xlsx') ||
+                f.name.toLowerCase().endsWith('.xlsm')
+            );
+
+            if (validFiles.length !== files.length) {
+                showFlash('.xlsx または .xlsm ファイルのみ対応しています', 'warning');
+            }
+
+            validFiles.forEach(file => {
+                if (!selectedFiles.find(f => f.name === file.name && f.size === file.size)) {
+                    selectedFiles.push(file);
+                }
+            });
+
+            updateFileList();
+            fetchSheetInfo();
+        }
+
+        function removeFile(index) {
+            const file = selectedFiles[index];
+            delete fileSheets[file.name];
+            selectedFiles.splice(index, 1);
+            updateFileList();
+            updateSummary();
+        }
+
+        function updateFileList() {
+            if (selectedFiles.length === 0) {
+                fileList.classList.remove('visible');
+                dropZone.classList.remove('has-files');
+                submitBtn.disabled = true;
+                return;
+            }
+
+            fileList.classList.add('visible');
+            dropZone.classList.add('has-files');
+            submitBtn.disabled = selectedFiles.length < 2;
+
+            fileItems.innerHTML = selectedFiles.map((file, index) => {
+                const sheets = fileSheets[file.name] || [];
+                const sheetTags = sheets.length > 0
+                    ? sheets.map(s => `<span class="sheet-tag">${escapeHtml(s)}</span>`).join('')
+                    : '<span class="sheet-tag">読み込み中...</span>';
+
+                return `
+                    <div class="file-item">
+                        <div class="file-header">
+                            <span class="file-name">${escapeHtml(file.name)}</span>
+                            <button type="button" class="file-remove" onclick="removeFile(${index})">&times;</button>
+                        </div>
+                        <div class="sheet-tags">${sheetTags}</div>
+                    </div>
+                `;
+            }).join('');
+
+            // DataTransferでファイルをinputにセット
+            const dt = new DataTransfer();
+            selectedFiles.forEach(f => dt.items.add(f));
+            fileInput.files = dt.files;
+        }
+
+        async function fetchSheetInfo() {
+            const filesToFetch = selectedFiles.filter(f => !fileSheets[f.name]);
+            if (filesToFetch.length === 0) return;
+
+            const formData = new FormData();
+            filesToFetch.forEach(f => formData.append('files[]', f));
+
+            try {
+                const response = await fetch('/get_sheets', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (data.error) {
+                    showFlash(data.error, 'error');
+                    return;
+                }
+
+                data.files.forEach(f => {
+                    fileSheets[f.filename] = f.sheets;
+                });
+
+                updateFileList();
+                updateSummary();
+            } catch (err) {
+                showFlash('シート情報の取得に失敗しました', 'error');
+            }
+        }
+
+        function updateSummary() {
+            const totalFiles = selectedFiles.length;
+            const totalSheets = Object.values(fileSheets).flat().length;
+
+            if (totalFiles >= 2 && totalSheets > 0) {
+                summary.textContent = `${totalFiles}ファイル / ${totalSheets}シートを統合します`;
+                summary.classList.add('visible');
+            } else {
+                summary.classList.remove('visible');
+            }
+        }
+
+        // フォーム送信
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (selectedFiles.length < 2) {
+                showFlash('2つ以上のファイルを選択してください', 'error');
+                return;
+            }
+
+            loadingOverlay.classList.add('visible');
+            submitBtn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                selectedFiles.forEach(f => formData.append('files[]', f));
+
+                const response = await fetch('/api/merge', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || '処理中にエラーが発生しました');
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = '統合ファイル.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+                showFlash('シートを統合しました', 'success');
+
+            } catch (error) {
+                showFlash(error.message, 'error');
+            } finally {
+                loadingOverlay.classList.remove('visible');
+                submitBtn.disabled = false;
+            }
+        });
+
+        function showFlash(message, type) {
+            const existing = document.querySelector('.flash-messages');
+            if (existing) existing.remove();
+
+            const container = document.querySelector('.container');
+            const description = document.querySelector('.description');
+
+            const flashDiv = document.createElement('div');
+            flashDiv.className = 'flash-messages';
+            flashDiv.innerHTML = `<div class="flash ${type}">${escapeHtml(message)}</div>`;
+
+            description.after(flashDiv);
+            setTimeout(() => flashDiv.remove(), 5000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

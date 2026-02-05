@@ -1,0 +1,10 @@
+# Flask and web dependencies
+flask>=2.0.0
+openpyxl>=3.0.0
+werkzeug>=2.0.0
+
+# Desktop app dependencies
+pywebview>=4.0.0
+
+# Build dependencies (install only when building)
+pyinstaller>=6.0.0
