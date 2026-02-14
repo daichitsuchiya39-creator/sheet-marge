@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Excelシート統合ツール</title>
+    <title>Sheet Merge</title>
     <style>
         * {
             box-sizing: border-box;
@@ -303,10 +303,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>Excelシート統合ツール</h1>
+        <h1>Sheet Merge</h1>
         <p class="description">
-            複数のExcelファイルをアップロードすると、<br>
-            すべてのシートを1つのファイルに統合してダウンロードできます。
+            Upload multiple workbook files and<br>
+            merge all sheets into a single file for download.
         </p>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -320,17 +320,17 @@
         {% endwith %}
 
         <div class="info-box">
-            <h3>使い方</h3>
+            <h3>How to Use</h3>
             <ul>
-                <li>2つ以上のExcelファイル（.xlsx, .xlsm）を選択</li>
-                <li>各ファイルのシートが「ファイル名_シート名」で統合されます</li>
-                <li>書式・レイアウト・数式は保持されます</li>
+                <li>Select 2 or more workbook files (.xlsx, .xlsm)</li>
+                <li>Sheets from each file will be merged as "FileName_SheetName"</li>
+                <li>Formatting, layout, and formulas are preserved</li>
             </ul>
         </div>
 
         <form method="POST" enctype="multipart/form-data" id="uploadForm">
             <div class="form-group">
-                <label>Excelファイルを選択（複数可）</label>
+                <label>Select Workbook Files (Multiple)</label>
                 <div class="drop-zone" id="dropZone">
                     <input type="file" name="files[]" id="fileInput" accept=".xlsx,.xlsm" multiple required>
                     <div class="drop-icon" id="dropIcon">
@@ -340,18 +340,18 @@
                             <line x1="12" y1="3" x2="12" y2="15"/>
                         </svg>
                     </div>
-                    <div class="drop-text">ここにファイルをドラッグ&ドロップ</div>
-                    <div class="drop-hint">または クリックしてファイルを選択（複数可）</div>
+                    <div class="drop-text">Drag & drop files here</div>
+                    <div class="drop-hint">or click to select files (multiple)</div>
                 </div>
 
                 <div class="file-list" id="fileList">
-                    <h3>選択されたファイル</h3>
+                    <h3>Selected Files</h3>
                     <div id="fileItems"></div>
                     <div class="summary" id="summary"></div>
                 </div>
             </div>
 
-            <button type="submit" id="submitBtn" disabled>統合してダウンロード</button>
+            <button type="submit" id="submitBtn" disabled>Merge and Download</button>
         </form>
     </div>
 
@@ -361,7 +361,7 @@
 
     <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
-        <div class="loading-text">シートを統合しています...</div>
+        <div class="loading-text">Merging sheets...</div>
     </div>
 
     <script>
@@ -417,7 +417,7 @@
             );
 
             if (validFiles.length !== files.length) {
-                showFlash('.xlsx または .xlsm ファイルのみ対応しています', 'warning');
+                showFlash('Only .xlsx or .xlsm files are supported', 'warning');
             }
 
             validFiles.forEach(file => {
@@ -454,7 +454,7 @@
                 const sheets = fileSheets[file.name] || [];
                 const sheetTags = sheets.length > 0
                     ? sheets.map(s => `<span class="sheet-tag">${escapeHtml(s)}</span>`).join('')
-                    : '<span class="sheet-tag">読み込み中...</span>';
+                    : '<span class="sheet-tag">Loading...</span>';
 
                 return `
                     <div class="file-item">
@@ -499,7 +499,7 @@
                 updateFileList();
                 updateSummary();
             } catch (err) {
-                showFlash('シート情報の取得に失敗しました', 'error');
+                showFlash('Failed to retrieve sheet information', 'error');
             }
         }
 
@@ -508,7 +508,7 @@
             const totalSheets = Object.values(fileSheets).flat().length;
 
             if (totalFiles >= 2 && totalSheets > 0) {
-                summary.textContent = `${totalFiles}ファイル / ${totalSheets}シートを統合します`;
+                summary.textContent = `Will merge ${totalFiles} files / ${totalSheets} sheets`;
                 summary.classList.add('visible');
             } else {
                 summary.classList.remove('visible');
@@ -520,7 +520,7 @@
             e.preventDefault();
 
             if (selectedFiles.length < 2) {
-                showFlash('2つ以上のファイルを選択してください', 'error');
+                showFlash('Please select 2 or more files', 'error');
                 return;
             }
 
@@ -538,20 +538,20 @@
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.error || '処理中にエラーが発生しました');
+                    throw new Error(errorData.error || 'An error occurred during processing');
                 }
 
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = '統合ファイル.xlsx';
+                a.download = 'merged-file.xlsx';
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
                 window.URL.revokeObjectURL(url);
 
-                showFlash('シートを統合しました', 'success');
+                showFlash('Sheets merged successfully', 'success');
 
             } catch (error) {
                 showFlash(error.message, 'error');
