@@ -18,7 +18,7 @@ def get_resource_path(relative_path):
 
 app = Flask(__name__, template_folder=get_resource_path('templates'))
 app.secret_key = os.urandom(24)
-app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB制限
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB制限（Web版）
 
 ALLOWED_EXTENSIONS = {'xlsx', 'xlsm'}
 

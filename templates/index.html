@@ -288,6 +288,63 @@
         .site-footer a:hover {
             color: #3b82f6;
         }
+        .security-warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-left: 4px solid #ff9800;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            gap: 12px;
+            align-items: start;
+        }
+        .warning-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        .warning-content {
+            flex: 1;
+        }
+        .warning-content strong {
+            display: block;
+            color: #856404;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+        .warning-content p {
+            margin: 0 0 12px 0;
+            color: #856404;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .warning-content p:last-of-type {
+            margin-bottom: 0;
+        }
+        .desktop-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: #ff9800;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        .desktop-link:hover {
+            background: #f57c00;
+        }
+        .desktop-link::after {
+            content: '→';
+        }
+        .size-limit-notice {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 8px;
+        }
         @media (max-width: 480px) {
             body {
                 padding: 20px 12px;
@@ -308,6 +365,16 @@
             Upload multiple workbook files and<br>
             merge all sheets into a single file for download.
         </p>
+
+        <div class="security-warning">
+            <div class="warning-icon">🔒</div>
+            <div class="warning-content">
+                <strong>Security Notice for Confidential Data</strong>
+                <p>This web version uploads files to a server for processing. Please <strong>do not use files containing confidential information</strong> such as personal data, HR records, financial information, or proprietary business data.</p>
+                <p>For secure, offline processing of sensitive files, please use our <strong>Desktop Version</strong> where all data stays on your computer.</p>
+                <a href="https://chiapuru.com/apps/sheet-merge#desktop" class="desktop-link">Desktop Version (Secure & Offline)</a>
+            </div>
+        </div>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -342,6 +409,9 @@
                     </div>
                     <div class="drop-text">Drag & drop files here</div>
                     <div class="drop-hint">or click to select files (multiple)</div>
+                </div>
+                <div class="size-limit-notice">
+                    📊 Web version file size limit: <strong>5MB</strong> per file
                 </div>
 
                 <div class="file-list" id="fileList">
